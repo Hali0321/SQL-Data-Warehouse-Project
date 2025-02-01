@@ -21,15 +21,14 @@ BEGIN
         FROM pg_stat_activity
         WHERE pg_stat_activity.datname = 'datawarehouse' AND pid <> pg_backend_pid();
         
-        DROP DATABASE datawarehouse;
+        EXECUTE 'DROP DATABASE datawarehouse';
     END IF;
 END $$;
 
 -- Create the 'datawarehouse' database
 CREATE DATABASE datawarehouse;
 
--- Connect to the new database (not needed in script execution, but do so in pgAdmin)
-\c datawarehouse
+-- Now manually select 'datawarehouse' as the active database in pgAdmin4 before running the next part
 
 -- Create Schemas
 CREATE SCHEMA bronze;

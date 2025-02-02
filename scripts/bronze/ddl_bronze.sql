@@ -1,95 +1,70 @@
-CREATE OR REPLACE FUNCTION bronze.load_bronze()
-RETURNS VOID AS $$
-DECLARE
-    start_time TIMESTAMP;
-    end_time TIMESTAMP;
-    batch_start_time TIMESTAMP;
-    batch_end_time TIMESTAMP;
-BEGIN
-    -- Start the batch load process
-    batch_start_time := CURRENT_TIMESTAMP;
-    RAISE NOTICE '================================================';
-    RAISE NOTICE 'Loading Bronze Layer';
-    RAISE NOTICE '================================================';
+-- Ensure the 'bronze' schema exists
+CREATE SCHEMA IF NOT EXISTS bronze;
 
-    -- Load CRM Tables
-    RAISE NOTICE '------------------------------------------------';
-    RAISE NOTICE 'Loading CRM Tables';
-    RAISE NOTICE '------------------------------------------------';
+-- Create crm_cust_info Table
+DROP TABLE IF EXISTS bronze.crm_cust_info;
 
-    -- Loading crm_cust_info table
-    start_time := CURRENT_TIMESTAMP;
-    RAISE NOTICE '>> Truncating Table: bronze.crm_cust_info';
-    TRUNCATE TABLE bronze.crm_cust_info;
-    RAISE NOTICE '>> Inserting Data Into: bronze.crm_cust_info';
-    COPY bronze.crm_cust_info FROM '/path/to/csv/cust_info.csv' WITH (FORMAT csv, HEADER true, DELIMITER ',');
-    end_time := CURRENT_TIMESTAMP;
-    RAISE NOTICE '>> Load Duration: % seconds', EXTRACT(EPOCH FROM end_time - start_time);
+CREATE TABLE bronze.crm_cust_info (
+    cst_id INT,
+    cst_key VARCHAR(50),
+    cst_firstname VARCHAR(50),
+    cst_lastname VARCHAR(50),
+    cst_marital_status VARCHAR(50),
+    cst_gndr VARCHAR(50),
+    cst_create_date DATE
+);
 
-    -- Loading crm_prd_info table
-    start_time := CURRENT_TIMESTAMP;
-    RAISE NOTICE '>> Truncating Table: bronze.crm_prd_info';
-    TRUNCATE TABLE bronze.crm_prd_info;
-    RAISE NOTICE '>> Inserting Data Into: bronze.crm_prd_info';
-    COPY bronze.crm_prd_info FROM '/path/to/csv/prd_info.csv' WITH (FORMAT csv, HEADER true, DELIMITER ',');
-    end_time := CURRENT_TIMESTAMP;
-    RAISE NOTICE '>> Load Duration: % seconds', EXTRACT(EPOCH FROM end_time - start_time);
+-- Create crm_prd_info Table
+DROP TABLE IF EXISTS bronze.crm_prd_info;
 
-    -- Loading crm_sales_details table
-    start_time := CURRENT_TIMESTAMP;
-    RAISE NOTICE '>> Truncating Table: bronze.crm_sales_details';
-    TRUNCATE TABLE bronze.crm_sales_details;
-    RAISE NOTICE '>> Inserting Data Into: bronze.crm_sales_details';
-    COPY bronze.crm_sales_details FROM '/path/to/csv/sales_details.csv' WITH (FORMAT csv, HEADER true, DELIMITER ',');
-    end_time := CURRENT_TIMESTAMP;
-    RAISE NOTICE '>> Load Duration: % seconds', EXTRACT(EPOCH FROM end_time - start_time);
+CREATE TABLE bronze.crm_prd_info (
+    prd_id INT,
+    prd_key VARCHAR(50),
+    prd_nm VARCHAR(50),
+    prd_cost INT,
+    prd_line VARCHAR(50),
+    prd_start_dt TIMESTAMP,
+    prd_end_dt TIMESTAMP
+);
 
-    -- Load ERP Tables
-    RAISE NOTICE '------------------------------------------------';
-    RAISE NOTICE 'Loading ERP Tables';
-    RAISE NOTICE '------------------------------------------------';
+-- Create crm_sales_details Table
+DROP TABLE IF EXISTS bronze.crm_sales_details;
 
-    -- Loading erp_loc_a101 table
-    start_time := CURRENT_TIMESTAMP;
-    RAISE NOTICE '>> Truncating Table: bronze.erp_loc_a101';
-    TRUNCATE TABLE bronze.erp_loc_a101;
-    RAISE NOTICE '>> Inserting Data Into: bronze.erp_loc_a101';
-    COPY bronze.erp_loc_a101 FROM '/path/to/csv/loc_a101.csv' WITH (FORMAT csv, HEADER true, DELIMITER ',');
-    end_time := CURRENT_TIMESTAMP;
-    RAISE NOTICE '>> Load Duration: % seconds', EXTRACT(EPOCH FROM end_time - start_time);
+CREATE TABLE bronze.crm_sales_details (
+    sls_ord_num VARCHAR(50),
+    sls_prd_key VARCHAR(50),
+    sls_cust_id INT,
+    sls_order_dt INT,
+    sls_ship_dt INT,
+    sls_due_dt INT,
+    sls_sales INT,
+    sls_quantity INT,
+    sls_price INT
+);
 
-    -- Loading erp_cust_az12 table
-    start_time := CURRENT_TIMESTAMP;
-    RAISE NOTICE '>> Truncating Table: bronze.erp_cust_az12';
-    TRUNCATE TABLE bronze.erp_cust_az12;
-    RAISE NOTICE '>> Inserting Data Into: bronze.erp_cust_az12';
-    COPY bronze.erp_cust_az12 FROM '/path/to/csv/cust_az12.csv' WITH (FORMAT csv, HEADER true, DELIMITER ',');
-    end_time := CURRENT_TIMESTAMP;
-    RAISE NOTICE '>> Load Duration: % seconds', EXTRACT(EPOCH FROM end_time - start_time);
+-- Create erp_loc_a101 Table
+DROP TABLE IF EXISTS bronze.erp_loc_a101;
 
-    -- Loading erp_px_cat_g1v2 table
-    start_time := CURRENT_TIMESTAMP;
-    RAISE NOTICE '>> Truncating Table: bronze.erp_px_cat_g1v2';
-    TRUNCATE TABLE bronze.erp_px_cat_g1v2;
-    RAISE NOTICE '>> Inserting Data Into: bronze.erp_px_cat_g1v2';
-    COPY bronze.erp_px_cat_g1v2 FROM '/path/to/csv/px_cat_g1v2.csv' WITH (FORMAT csv, HEADER true, DELIMITER ',');
-    end_time := CURRENT_TIMESTAMP;
-    RAISE NOTICE '>> Load Duration: % seconds', EXTRACT(EPOCH FROM end_time - start_time);
+CREATE TABLE bronze.erp_loc_a101 (
+    cid VARCHAR(50),
+    cntry VARCHAR(50)
+);
 
-    -- Complete the batch process
-    batch_end_time := CURRENT_TIMESTAMP;
-    RAISE NOTICE '==========================================';
-    RAISE NOTICE 'Loading Bronze Layer is Completed';
-    RAISE NOTICE '   - Total Load Duration: % seconds', EXTRACT(EPOCH FROM batch_end_time - batch_start_time);
-    RAISE NOTICE '==========================================';
-    
-EXCEPTION
-    WHEN OTHERS THEN
-        RAISE NOTICE '==========================================';
-        RAISE NOTICE 'ERROR OCCURRED DURING LOADING BRONZE LAYER';
-        RAISE NOTICE 'Error Message: %', SQLERRM;
-        RAISE NOTICE '==========================================';
-        -- Optionally ROLLBACK if necessary
-        ROLLBACK;
-END;
-$$ LANGUAGE plpgsql;
+-- Create erp_cust_az12 Table
+DROP TABLE IF EXISTS bronze.erp_cust_az12;
+
+CREATE TABLE bronze.erp_cust_az12 (
+    cid VARCHAR(50),
+    bdate DATE,
+    gen VARCHAR(50)
+);
+
+-- Create erp_px_cat_g1v2 Table
+DROP TABLE IF EXISTS bronze.erp_px_cat_g1v2;
+
+CREATE TABLE bronze.erp_px_cat_g1v2 (
+    id VARCHAR(50),
+    cat VARCHAR(50),
+    subcat VARCHAR(50),
+    maintenance VARCHAR(50)
+);
